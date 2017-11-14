@@ -140,18 +140,24 @@ x[4:10]
 x[length(x)]
 x[length(x)-1]
 
+####Data Frame vs. Matrix: Matrix nur numerische Werte, keine Variablennamen, Data Frame kann auch verschiedene Werte und Namen
+
 ##Indexing - Data Frame
 test <- data.frame(A=c(1,2,3),B=c('aB1','aB2','aB3'))
 test[,1]
+test[,'A']                                   #same thing
 
 df <- data.frame(plot='location_name_1',measure1=runif(100)*1000,measure2=round(runif(100)*100),value=rnorm(100,2,1),ID=rep(LETTERS,100))
 df_2 <- data.frame(plot='location_name_2',measure1=runif(50)*100,measure2=round(runif(50)*10),value=rnorm(50),ID=rep(LETTERS,50))
-df <- rbind(df,df_2)
+df <- rbind(df,df_2)                         #data merging
 summary(df)
 str(df)
 head(df)
-df[566:570,c('plot','measure1','measure2')]
-
+length(df$measure1)
+df[,c('plot','measure1','measure2')]
+a <- df[,c('plot','measure1','measure2')]
+a
+df[100,c('plot','measure1','measure2')]
 
 ##quering single values
 prec_avg[7]       #prec July
@@ -159,9 +165,48 @@ prec_avg[4:9]     #prec April-June
 
 ##task for next week
 getwd()
+#setwd("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day2")
+setwd('E:/Introduction to R and Geostatistics/day2')
 
-x <- read.table('pH.csv')    #ich verstehe nicht ganz, was ich tue
+x <- read.table('pH.csv',sep=';',dec=',')         #seperator definiert, genauso wie Komma für Dezimalstellen
+names(x) <- c('H2O','KCL','CaCL2')                #gibt es auch was, um die Zeilen zu benennen?
+x
 summary(x)
-head(x)
+str(x)
+mode(x)
 cut(x)
-sort('pH.csv',x,decreasing=FALSE)
+sort('pH.csv',x,decreasing=FALSE)                 #was muss hier verändert werden?
+
+
+
+########Uebung3 - 14.11.17#########
+
+#erst einmal Wiederholung der letzten Stunde
+
+library(car)
+x <- seq(1,100,by=1)
+x
+recode(x,'0:30=1;31:70=2;else=3')                 #einfacher als manuell: recode aus car package
+
+##Indexing again
+m1 <- matrix(c(4,7,3,8,9,2),nrow=2)
+m1
+m2 <- matrix(c(2,4,3,1,5,7),nrow=2,ncol=3,byrow=TRUE)
+m2
+
+'Fortsetzung der letzten Woche'
+df <- data.frame(plot='location_name_1',measure1=runif(100)*1000,measure2=round(runif(100)*100),value=rnorm(100,2,1),ID=rep(LETTERS,100))
+df_2 <- data.frame(plot='location_name_2',measure1=runif(50)*100,measure2=round(runif(50)*10),value=rnorm(50),ID=rep(LETTERS,50))
+df <- rbind(df,df_2)                         #data merging
+summary(df)
+str(df)
+head(df)
+length(df$measure1)
+df[,c('plot','measure1','measure2')]
+a <- df[,c('plot','measure1','measure2')]
+b <- df[,c('measure1')]
+plot(b)
+c <- b <- df[,c('measure2')]
+plot(c)
+d <- df[,c('plot','measure1')]
+plot(d)
