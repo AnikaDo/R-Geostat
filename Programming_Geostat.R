@@ -210,3 +210,60 @@ c <- b <- df[,c('measure2')]
 plot(c)
 d <- df[,c('plot','measure1')]
 plot(d)
+
+##Raster-Einführung
+
+'create own raster'
+install.packages("raster")
+library(raster)
+
+r1 <- raster(nrows=10,ncols=10)
+r1[] <- rnorm(100)               #[]heißt: r1 wird nicht überschreiben, sondern die Werte werden eingefügt
+plot(r1)
+
+library(sp)
+poi1 <- cbind(c(rnorm(10)),c(rnorm(10)))    #random set of values created as step-in coordinates
+poi1
+poi1.sp <- SpatialPoints(poi1)
+plot(poi1.sp)                               #plot spatial point data set
+df <- data.frame(attr1=c('a','b','z','d','e','q','w','r','z','y'),attr2=c(101:110))
+df
+poi1.spdf <- SpatialPointsDataFrame(poi1.sp,df)
+plot(poi1.spdf)#hier je nach Intervall verschiedene Farben einfügen)      #wie geht das?
+
+'Herumspielen'
+rbPal <- colorRampPalette(c('red','blue'))
+test <- rbPal(10)[as.numeric(cut(df$attr2,breaks=3))]
+plot(test)
+
+##Weiter arbeiten mit Rasterdaten
+install.packages("RStoolbox")
+library(RStoolbox)
+
+lsat
+plot(lsat$B2_dn)   #oder plot(lsat[[1]])
+B2_B3 <- c(lsat$B2_dn,lsat$B3_dn)   #lsat[[2:3]]
+B2_B3
+B2_30_40 <- lsat$B2_dn[30:40]     #DNs zwischen 30 und 40 extrahiert
+B2_30_40
+plot(B2_30_40)
+extract(r1,poi1.spdf)             #Extrahieren von Raster Values 
+
+install.packages("move")
+library(move)
+data(leroy)
+plot(leroy)
+env <- raster(leroy,vals=rnorm(100))
+x <- lsat[1:10,]
+x <- lsat[]
+x <- getValues(lsat)
+x <- lsat[lsat=10]
+x <- extract(env,leroy)
+plot(x)
+
+lsat[] <- rnorm(ncell(lsat))
+lsat[lsat<0] <- NA
+env[] <- 0
+env[leroy] <- 1
+plot(env)
+plot(lsat)
