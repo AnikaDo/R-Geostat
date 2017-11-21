@@ -218,7 +218,7 @@ install.packages("raster")
 library(raster)
 
 r1 <- raster(nrows=10,ncols=10)
-r1[] <- rnorm(100)               #[]heißt: r1 wird nicht überschreiben, sondern die Werte werden eingefügt
+r1[] <- rnorm(100)               #[]heißt: r1 wird nicht überschreiben, sondern die Werte werden eingefügt, werden 100 Zahlen eingefügt
 plot(r1)
 
 library(sp)
@@ -241,13 +241,14 @@ install.packages("RStoolbox")
 library(RStoolbox)
 
 lsat
-plot(lsat$B2_dn)   #oder plot(lsat[[1]])
+plot(lsat$B1_dn)   #oder plot(lsat[[1]])
 B2_B3 <- c(lsat$B2_dn,lsat$B3_dn)   #lsat[[2:3]]
 B2_B3
 B2_30_40 <- lsat$B2_dn[30:40]     #DNs zwischen 30 und 40 extrahiert
 B2_30_40
 plot(B2_30_40)
 extract(r1,poi1.spdf)             #Extrahieren von Raster Values 
+
 
 install.packages("move")
 library(move)
@@ -267,3 +268,158 @@ env[] <- 0
 env[leroy] <- 1
 plot(env)
 plot(lsat)
+
+
+##########Uebung 4 - 21.11.2017##############
+
+a <- sqrt(2)
+if(a*a != 2)               #!= ungleich
+    {                      #if statement in spatial context, i.e. together with resolution - resample bla  
+  print('R is great!')
+    }
+
+j <- 0
+while (j<1)
+    {
+  j <- j+0.1;print(j)
+    }
+
+                            #macht irgendeinen Unterschied wie rum man es schreibt. noch einmal Felix fragen 
+j <- 0
+while (j<1)
+{
+print(j);j <- j+0.1
+}
+
+myfunction <- function(x,y){
+  z <- x+y
+  return(z)}              #return is just needed if you have many values in your function then just z is returned
+
+myfunction(4,3)
+
+myfunction <- function(x,y){
+  z <- x+y
+  }                       #so wird bloß das Ergebnis ausgegeben, unabhängig von anderen Variablen, da diese nicht weiter definiert
+
+myfunction(4,3)           #why are functions important in RS? Calculation of different indices for example
+
+fun_ndvi <- function(nir,red){(nir-red)/(nir+red)}
+
+raster()  #single layer raster
+brick()   #multi-layer raster from one file
+stack()   #multi-layer raster from seperate files (same extent, resolution)
+
+#raster imports just one band at a time
+band_1 <- raster('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif', band=1)
+band_2 <- raster('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif', band=2)
+band_3 <- raster('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif', band=3)
+
+#combine rasters of identical dimensions from raster objects
+allbands <- stack(band_1,band_2,band_3)
+
+#combine rasters of identical dimensions from raster objects
+stacked <- stack(c(''))
+
+#brick imports all bands of a single file
+allbands <- brick('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif')
+allbands
+
+img <- brick('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif')
+img
+
+cellStats()       #wie geht das?
+summary()
+zonal()
+quantile()
+freq()
+
+#displaying your multi-spectral datra on RGB
+plotRGB(allbands,3,2,1)
+
+#maybe colour stretch is needed
+plotRGB(allbands,3,2,1,stretch='lin')
+
+#a ggplot2 option using the commands provided by package 'RStoolbox'
+library(ggplot2)
+ggRGB(allbands,3,2,1,stretch='lin')
+
+#single layer greyscale
+ggR(allbands,layer=4,maxpixels=1e6,stretch='hist')
+
+#single layer map to user defined legend
+ggR(allbands,layer=1,stretch='lin',geom_raster=TRUE)+scale_fill_gradient(low='blue',high='green')
+
+#export raster - overwrite if already existent
+writeRaster(img,datatype='FLT4S',filename='new_data.tif',format='GTiff',overwrite=TRUE)
+
+#export a picture to GoogleEarth, only works for geographic coordinates
+KML(img,new_data.tif,col=rainbow(255),maxpixels=100000)       #irgendwas funktioniert hier nicht
+
+plot(band_3)
+
+#draw an extent on the monitor (NW corner and SE corner)
+ext <- drawExtent()
+
+#ext is an object of all class extent
+band_3_crop <- crop(band_3, ext)
+
+#grow and shrink extents by multiplying
+ext*2  #grows extent in all four directions
+
+#cropping funktioniert auch so
+
+'Raster Algebra'
+
+#band calculation
+raster_sd <- calc(img,fun=sd)
+
+#adding a calculation into a function
+fun <- function(x){x/10}
+raster_output <- calc(img,fun)
+
+#set NA values to -999
+fun <- function(x){x[is.na(x)] <- -999;return(x)}
+raster_output <- calc(img, fun)
+plot(raster_output)
+
+#refer to single layers
+raster_output <- calc(img,fun=function(x){x[1]+x[2]*x[3]})
+
+#regression analysis
+raster12 <- stack(raster_1,raster_2)
+fun <- function(x){lm(x[1:5]~x[6:10])$coefficients[2]}
+raster_output <- calc(raster12,fun)
+
+#write your permanent results directly to disk when calculating them
+calc(img,fun=sd,filename='img_sd.grd')
+
+
+##NDVI calculation
+#import all layers all point to single bands with [[]]
+lsat <- brick('E:/R_und_Geostatistics/crop_p224r63_all_bands.tif')
+ndvi <- (lsat[[4]]-lsat[[3]])/(lsat[[4]]+lsat[[3]])
+plot(ndvi)
+
+#or import single band rasters and point to individual objects
+band_3 <- raster('E:/R_und_Geostatistics/raster_band3.tif')
+band_4
+
+'overlay'
+ndvi <- overlay(lsat[[4]],lsat[[3]],fun=function(nir,red){(nir-red)/(nir+red)})
+plot(ndvi)
+'calc'
+ndvi <- calc(lsat,fun=function(x){(x[,4]-x[,3])/(x[,4]+x[,3])})
+plot(ndvi)
+'exportimg resulting VI image'
+savi <- overlay(lsat[[4]],lsat[[3]],fun=function(nir,red){(nir-red)/(nir+red+0.5)*(1+0.5)},filename='savi.tif',format='GTiff')
+
+#we use defined NDVI function, so we dont have to write it several times
+fun_ndvi <- function(nir,red){(nir-red)/(nir+red)}
+
+#MSAVI Funktion
+fun_msavi <- function(nir,red){(2*nir+1-sqrt((2*nir+1)^2-8*(nir-red)))/2}
+msavi <- overlay(lsat[[4]],lsat[[3]],fun=fun_msavi)         'IRGENDWO IST HIER NOCH EIN FEHLER!'
+plot(msavi)
+
+#An alternative command aus der RStoolbox
+spectralIndices()
