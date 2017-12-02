@@ -423,3 +423,167 @@ plot(msavi)
 
 #An alternative command aus der RStoolbox
 spectralIndices()
+
+
+#######Uebung 5 - 28.11.17#################################################################
+
+'a list'
+a <- runif(199)
+b <- c("aa","bb","cc","dd","ee")
+c <- list(a,b)
+c
+
+'indexing a list of two vectors'
+c[2]            #ist das gleiche wie: c[[2]] <- indexing the second object
+c[[2]][1]       #first entry of second object
+
+'...of different size'
+a <- list(obj_1=runif(100),obj_2=c("aa","bb"),obj_3=c(1,2,4))
+a$obj_1         #call the object name
+'oder' 
+a[["obj_1"]]
+'oder'    
+a[[2]]
+
+'a list with a matrix, vector and data frame of different sizes'
+a <- list(m1=matrix(runif(50),nrow = 5),v1=c(1,6,10),df1=data.frame(a=runif(100),b=rnorm(100)))
+a$df1[,1]    #index a data frame or matrix as known
+
+#if-else statement
+a <- 5
+if(a>0)
+{
+  print("it is a positive number")
+}
+
+a <- 5
+if(a !=5)
+{
+  print("number is not equal 5")
+} else {
+  print("number is equal 5")
+}
+
+'while statement'
+j <- 0
+while(j<1)
+{
+  j <- j+0.1; print(j)
+}
+
+'add commonly used analyses to a function'
+#myfunction <- function(arg1,arg2,...){
+#  statements
+#  return(object)
+#  }
+
+myfunction <- function(x,y){
+  z <- x+y
+  return(z)         #ohne return(): last created object is returned
+  }
+
+myfunction(4,3)
+
+#Vegetation Indices
+install.packages("raster")
+library(raster)
+install.packages("rgdal")
+library(rgdal)
+
+lsat <- brick("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/UG_Landsat.tif")
+ndvi <- (lsat[[4]]-lsat[[3]])/(lsat[[4]]+lsat[[3]])
+plot(ndvi)
+'oder'
+band_3 <- raster("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/UG_Landsat_B3.tif")
+band_4 <- raster("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/UG_Landsat_B4.tif")
+ndvi <- (band_4-band_3)/(band_4+band_3)
+plot(ndvi)
+
+#functions in band calculations using commands
+ndvi <- overlay(band_4, band_3, fun=function(nir,red){(nir-red)/(nir+red)})
+
+ndvi <- calc(lsat, fun=function(x){(x[,4]-x[,3])/(x[,4]+x[,3])})
+
+savi <- overlay(band_4, band_3, fun=function(nir,red0){(nir-red)/(nir+red+0.5)*1+0.5}, filename="savi.tif", format="GTiff")
+     #FEHLERMELDUNG: cannot use this formula, because it is not vectorized
+
+fun_ndvi <- function(nir,red){(nir-red)/(nir+red)}
+ndvi <- overlay(band_4, band_3, fun=fun_ndvi)
+
+install.packages("RStoolbox")
+library(RStoolbox)
+ndvi <- spectralIndices(lsat, red="band_3", nir="band_4", indices="NDVI")  #wieso klappt das nicht?
+VIs <- spectralIndices(lsat_ref, red="B3_tre", nir="B4_tre")               #hier auch nicht
+
+
+##Classification
+'unsupervised'
+band_1 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=1)
+band_2 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=2)
+band_3 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=3)
+allbands <- stack(band_1,band_2,band_3)
+uc <- unsuperClass(allbands,nClasses=5)
+plot(uc$map)
+
+landsat_allbands.kmeans <- kmeans(allbands[],5)
+kmeansraster <- raster(allbands)
+kmeansraster[] <- landsat_allbands.kmeans$cluster 
+plot(kmeansraster)
+
+'create a copy, filled with NAs'
+kmeansraster <- allbands[[1]]     #create a copy, filled with NAs
+kmeansraster[] <- NA              
+values <- getValues(allbands)     #extract values from raster layers
+valid <- complete.cases(values)   #just use complete cases
+allbands.kmeans <- kmeans(values[valid,],5,iter.max=100,nstart=3)     #run the kmeans clustering
+kmeansraster[valid] <- allbands.kmeans$cluster   #populate empty vector with cluster values derived from kmeans
+plot(kmeansraster)
+click(kmeansraster, n=3)
+arg <- list(at=seq(1,5,1),labels=c("none","none","water","forest","defo"))
+colour <- c("white","white","blue","green","brown")
+plot(kmeansraster,col=colour, axis.arg=arg)
+
+
+##ggplot2 intro and examples
+install.packages("ggplot2")
+library(ggplot2)
+x11()
+x <- data.frame(x=1,y=1,label="ggplot 2 introduction \n@ EAGLE")
+ggplot(data=x, aes(x=x,y=y))+geom_text(aes(label=label),size=15)
+
+install.packages("devtools")
+library(devtools)
+
+install_bitbucket("EAGLE_MSc/steigerwald",username=AnikaDo)
+library(steigerwald)
+data("bio_data")
+head(bio_data)
+ggplot(bio_data$forest_short,aes(x=beech, y=ndvi))+geom_point()
+
+ggplot(bio_data$forest_short,aes(beech,ndvi,colour=height))+geom_point()+geom_smooth()
+ggplot(bio_data$forest_short,aes(beech,ndvi))+geom_point()+facet_wrap(~sub_basin)+geom_smooth()
+ggplot(bio_data$forest_short,aes(sub_basin,ndvi))+geom_boxplot(alpha=.5)+geom_point(aes(color=height),alpha=.7,size=1.5,position=position_jitter(width=.25,height=0))
+ggplot()+geom_point(data=bio_data$forest_short,aes(sub_basin,ndvi))
+ggplot()+geom_point(data=bio_data$forest_short,aes(sub_basin,ndvi,color=height))
+
+'themes and storing the plot'
+a <- ggplot()+geom_point(data=bio_data$forest_short,aes(sub_basin,ndvi,color=height))
+a+theme_bw()    #call a stored plot and add new options
+theme_set(theme_bw())  #for all further plots
+a         #global settings
+a <- ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class)) #easily change the theme
+a+theme_bw() #change the theme for one plot
+theme_set(theme_bw()) #change the theme globally
+
+'define your theme'
+ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))+facet_grid(manufacturer~class)+ggtitle('EAGLE chart')+theme(plot.title=element_text(angle=0,size=22,colour="hotpink"))+scale_color_discrete(name="type")
+
+
+######Task for December 5th 2017#########
+#plot some other data, need: RCurl package, get data with getURL("..."), import data with read.csv(textConnection(downloadedCsv))
+#https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv
+
+install.packages("RCurl")
+library(RCurl)
+getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
+read.csv("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/task.csv")
