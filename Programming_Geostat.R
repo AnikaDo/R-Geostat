@@ -630,3 +630,41 @@ x.g <- gender(names(x))  #run the gender detection on names
 colnames(x.g)[1] <- "variable"  #change the column name again for later merging
 x4 <- merge(x3,x.g,by.x="variable",all=T) #merging w/ previously created data
 ggplot(x4,aes(x=variable,y=value,colour=cumsum))+geom_boxplot()+facet_wrap(~gender)
+
+
+#your theoretical field data format
+fielddata_wide <- read.table(header=TRUE,text='
+plot_id name Cover LAI DBH
+1 Sophie 7.9 12.3 10.7
+2 Achmed 6.3 10.6 11.1
+3 Achmed 9.5 13.1 13.8
+4 Sophie 11.5 13.4 12.9
+')
+library(reshape2)
+fielddata_long <- melt(fielddata_wide, id.vars=c("plot_id","name"),measure.vars=c("Cover","LAI","DBH"),variable.name="method",value.name="measurement")
+fielddata_long
+
+data_wide <- dcast(fielddata_long,plot_id+name~sample,value.var="measurement")  #doesnt work :(
+
+##ggplot2 and spatial data
+install.packages("ggmap")
+library(ggmap)
+install.packages("mapproj")
+library(mapproj)
+map.do <- get_map("Dortmund",zoom=15)
+map.wue <- get_map("Wurzburg")
+map <- get_map("Bavaria",zoom=6)
+ggmap(map)
+ggmap(map.do)
+
+
+lsat.df <- data.frame(coordinates(lsat),getValues(lsat))
+lsat.df <- lsat.df[lsat.df$B1_dn!=0,]
+ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(na.value = NA)+coord_equal()
+ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(low="black",high="white",na.value = NA)+coord_equal()
+
+a <- ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(low="black",high="white",na.value = NA)+coord_equal()
+a
+poly <- readRDS(system.file("external/trainingPolygons.rds",package="RStoolbox"))
+plots <- as.data.frame(coordinates(poly))
+a+guides(fill=guide_colourbar())+geom_point(data=plots,aes(x=V1,y=V2),shape=3,colour="yellow")+theme(axis.title.x = element_blank())
