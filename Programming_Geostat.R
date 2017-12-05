@@ -1,5 +1,4 @@
 ########Uebung 1 - 25.10.2017################
-
 ##use as a calculator
 5+6
 5*5^4-88*15
@@ -12,8 +11,6 @@ result1
 result2 <- 10*5.2
 result2
 
-
-
 ##operators
 seq(1,100,by=2)         #generates a user defined sequence of data - 1 bis 100 in 2er Schritten
 
@@ -23,9 +20,6 @@ c("A", 1:100) #c() Umwandlung in Vektoren, kombiniert A und 1-100
 
 getwd()
 
-
-
-
 ##Precipitation Data
 
 prec_avg <- c(56,46,50,53,69,83,83,80,62,55,60,63)
@@ -33,12 +27,9 @@ plot(prec_avg)
 plot(prec_avg, pch=19, cex=2, col="#00ff0060")
 lines(lowess(prec_avg,f=.2))
 
-
 random <-c (1,5,32,42,32,21,2,32,34)
 plot(random, pch=15, cex=1.4, col="#00ff0060")
 plot(log(random), pch=15, cex=1.4, col="#00ff0060")
-
-
 
 ##Niederschlag Deutschland 
 install.packages("raster")
@@ -58,7 +49,6 @@ spplot(prec_ger2)
 
 prec_avg <- cellStats(prec_ger2,stat="mean")
 plot(prec_avg)
-
 
 ##Rmarkdown & Knitr installieren
 install.packages("rmarkdown")
@@ -248,7 +238,6 @@ B2_30_40 <- lsat$B2_dn[30:40]     #DNs zwischen 30 und 40 extrahiert
 B2_30_40
 plot(B2_30_40)
 extract(r1,poi1.spdf)             #Extrahieren von Raster Values 
-
 
 install.packages("move")
 library(move)
@@ -518,16 +507,25 @@ VIs <- spectralIndices(lsat_ref, red="B3_tre", nir="B4_tre")               #hier
 
 ##Classification
 'unsupervised'
-band_1 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=1)
-band_2 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=2)
-band_3 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=3)
+install.packages("raster")
+library(raster)
+install.packages("rgdal")
+library(rgdal)
+install.packages("RStoolbox")
+library(RStoolbox)
+#band_1 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=1)
+#band_2 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=2)
+#band_3 <- raster('D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/crop_p224r63_all_bands.tif', band=3)
+band_1 <- raster('E:/Introduction to R and Geostatistics/crop_p224r63_all_bands.tif', band=1)
+band_2 <- raster('E:/Introduction to R and Geostatistics/crop_p224r63_all_bands.tif', band=2)
+band_3 <- raster('E:/Introduction to R and Geostatistics/crop_p224r63_all_bands.tif', band=3)
 allbands <- stack(band_1,band_2,band_3)
-uc <- unsuperClass(allbands,nClasses=5)
+uc <- unsuperClass(allbands,nClasses=5)         #uc is a list containing auxilary information
 plot(uc$map)
 
-landsat_allbands.kmeans <- kmeans(allbands[],5)
+landsat_allbands.kmeans <- kmeans(allbands[],5) #is a clustering algorithm, dont use the spatial object, just use the data of the spatial object
 kmeansraster <- raster(allbands)
-kmeansraster[] <- landsat_allbands.kmeans$cluster 
+kmeansraster[] <- landsat_allbands.kmeans$cluster #insert it into the slot of kmeansraster
 plot(kmeansraster)
 
 'create a copy, filled with NAs'
@@ -539,8 +537,8 @@ allbands.kmeans <- kmeans(values[valid,],5,iter.max=100,nstart=3)     #run the k
 kmeansraster[valid] <- allbands.kmeans$cluster   #populate empty vector with cluster values derived from kmeans
 plot(kmeansraster)
 click(kmeansraster, n=3)
-arg <- list(at=seq(1,5,1),labels=c("none","none","water","forest","defo"))
-colour <- c("white","white","blue","green","brown")
+arg <- list(at=seq(1,5,1),labels=c("none","none","water","forest","defo"))     #argument scheme
+colour <- c("white","white","blue","green","brown")                            #colour schmeme
 plot(kmeansraster,col=colour, axis.arg=arg)
 
 
@@ -558,7 +556,7 @@ install_bitbucket("EAGLE_MSc/steigerwald",username=AnikaDo)
 library(steigerwald)
 data("bio_data")
 head(bio_data)
-ggplot(bio_data$forest_short,aes(x=beech, y=ndvi))+geom_point()
+ggplot(bio_data$forest_short,aes(x=beech,y=ndvi))+geom_point()
 
 ggplot(bio_data$forest_short,aes(beech,ndvi,colour=height))+geom_point()+geom_smooth()
 ggplot(bio_data$forest_short,aes(beech,ndvi))+geom_point()+facet_wrap(~sub_basin)+geom_smooth()
@@ -580,10 +578,55 @@ ggplot()+geom_point(data=mpg,aes(x=displ,y=hwy,colour=class))+facet_grid(manufac
 
 
 ######Task for December 5th 2017#########
-#plot some other data, need: RCurl package, get data with getURL("..."), import data with read.csv(textConnection(downloadedCsv))
-#https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv
+#plot some other data
 
 install.packages("RCurl")
 library(RCurl)
-getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
-read.csv("D:/Studium/Master/3. WiSe 17-18/Introduction to R and Geostatistics/day5/task.csv")
+#getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
+x <- read.csv(textConnection(getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")))
+x
+summary(x)
+
+install.packages("ggplot2")
+library(ggplot2)
+x11()
+ggplot()
+
+
+#########Uebung 6 - 05.12.2017#################################################################################################
+#ggplot2 playground
+install.packages("ggplot2")
+library(ggplot2)
+data=data.frame(value=rnorm(10000))
+ggplot(data,aes(x=value))+geom_histogram()      #basic histogram
+ggplot(data,aes(x=value))+geom_histogram(binwidth = 0.05)  #custom binning = giving the size of thge bin
+ggplot(data,aes(x=value))+geom_histogram(binwidth = 0.2,color="white",fill=rgb(0.2,0.7,0.1,0.4))    #uniform colour
+#ggplot(data, aes(x=value)) + geom_histogram(binwidth = 0.2, aes(fill = ..count..) )  #proportional colour
+
+
+##Daten aus CSV File plotten
+install.packages("RCurl")
+library(RCurl)
+#getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")
+x <- read.csv(textConnection(getURL("https://docs.google.com/spreadsheets/d/e/2PACX-1vTbXxJqjfY-voU-9UWgWsLW09z4dzWsv9c549qxvVYxYkwbZ9RhGE4wnEY89j4jzR_dZNeiWECW9LyW/pub?gid=0&single=true&output=csv")))
+x
+summary(x)
+install.packages("reshape2")
+library(reshape2)
+x2 <- melt(data=x)
+library(ggplot2)
+ggplot(x2,aes(x=variable,y=value))+geom_boxplot()
+
+x.cs <- data.frame(variable=names(x),cs=t(cumsum(x)[nrow(x),])) #cumulative sum of missed minutes is in last row and we index that
+names(x.cs) <- c("variable","cumsum")    #change the names to fit the melt output and to be able to merge it later on
+x2 <- melt(data=x)     #reshaping the data to see the differences
+x3 <- merge(x.cs,x2,by.x="variable",all=T)   #merge the two data frames based on "variable"
+ggplot(x3,aes(x=variable,y=value,colour=cumsum))+geom_point()    #plot the sum as colour
+ggplot(x3,aes(x=variable,y=value,colour=cumsum))+geom_boxplot(alpha=.5)+geom_point(alpha=.7,size=1.5, position=position_jitter(width=0.25,height=.5))
+
+install.packages("gender")
+library(gender)
+x.g <- gender(names(x))  #run the gender detection on names
+colnames(x.g)[1] <- "variable"  #change the column name again for later merging
+x4 <- merge(x3,x.g,by.x="variable",all=T) #merging w/ previously created data
+ggplot(x4,aes(x=variable,y=value,colour=cumsum))+geom_boxplot()+facet_wrap(~gender)
