@@ -667,4 +667,35 @@ a <- ggplot(lsat.df)+geom_raster(aes(x=x,y=y,fill=B3_dn))+scale_fill_gradient(lo
 a
 poly <- readRDS(system.file("external/trainingPolygons.rds",package="RStoolbox"))
 plots <- as.data.frame(coordinates(poly))
-a+guides(fill=guide_colourbar())+geom_point(data=plots,aes(x=V1,y=V2),shape=3,colour="yellow")+theme(axis.title.x = element_blank())
+a+guides(fill=guide_colourbar())+geom_point(data=plots,aes(x=V1,y=V2),shape=2,colour="orange",size=26)+theme(axis.title.x = element_blank())
+
+#plotting raster objects using RStoolbox
+install.packages("devtools")
+library(devtools)
+
+install_bitbucket("EAGLE_MSc/steigerwald",username=AnikaDo)
+library(steigerwald)
+data("bio_data")
+head(bio_data)
+ggplot(bio_data$forest_short,aes(x=beech,y=ndvi))+geom_point()
+
+
+################Uebung 8 - 19.12.17######################################################################################
+
+#need a break? play a game
+install.packages("fun")
+library(fun)
+if(.Platform$OS.type=='windows')x11()else x11(type="Xlib")
+mine_sweeper()
+
+install.packages('sudoku')
+if(.Platform$OS.type=='windows')x11()else x11(type="Xlib")
+library(sudoku)
+playSudoku()
+
+if(!require(devtools)){install.packages(devtools)}
+devtools::install_github("brooke-watson/BRRR")
+library(BRRR)  
+skrrrahh('drummaboy')
+skrrrahh('snoop')
+skrrrahh(41)
